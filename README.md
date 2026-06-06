@@ -1,73 +1,85 @@
-# React + TypeScript + Vite
+# タスク管理アプリ（Kanban Board）
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React + TypeScript + Supabase で作成したカンバン方式のタスク管理アプリです。
 
-Currently, two official plugins are available:
+**デモ: https://kanban-app-2026.netlify.app**
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 機能
 
-## React Compiler
+- **認証**: メール+パスワードでのサインアップ・ログイン・パスワードリセット
+- **カスタム列**: 列の追加・リネーム・削除
+- **タスク管理**: タイトル・メモ・優先度（高/中/低）・期限の設定
+- **ドラッグ&ドロップ**: 列内の並び替え・列間の移動（両方向対応）
+- **タスク完了**: 完了チェックで打ち消し線＋色変更
+- **検索・フィルター**: タスク名検索・優先度フィルター
+- **削除確認**: タスク・列の削除時に確認ダイアログ表示
+- **モバイル対応**: スクロールスナップによるスマートフォン対応
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 技術スタック
 
-## Expanding the ESLint configuration
+| 用途 | 技術 |
+|---|---|
+| フロントエンド | React 18 + TypeScript + Vite |
+| スタイル | Tailwind CSS v4 |
+| バックエンド | Supabase（PostgreSQL + Auth） |
+| ドラッグ&ドロップ | @dnd-kit/core + @dnd-kit/sortable |
+| デプロイ | Netlify |
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## セットアップ
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### 必要なもの
+- Node.js 18以上
+- Supabase アカウント
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+### 手順
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+1. リポジトリをクローン
+```bash
+git clone https://github.com/hirobuilds7/kanban-app.git
+cd kanban-app
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+2. 依存パッケージをインストール
+```bash
+npm install
+```
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+3. Supabase でテーブルを作成
+```sql
+create table columns (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references auth.users not null,
+  title text not null,
+  position integer not null,
+  created_at timestamptz default now()
+);
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+create table tasks (
+  id uuid primary key default gen_random_uuid(),
+  column_id uuid references columns on delete cascade not null,
+  user_id uuid references auth.users not null,
+  title text not null,
+  memo text,
+  priority text check (priority in ('high','medium','low')) default 'medium',
+  due_date date,
+  position integer not null,
+  is_completed boolean default false,
+  created_at timestamptz default now()
+);
+
+alter table columns enable row level security;
+alter table tasks enable row level security;
+create policy "own columns" on columns using (auth.uid() = user_id);
+create policy "own tasks" on tasks using (auth.uid() = user_id);
+```
+
+4. 環境変数を設定
+```bash
+cp .env.example .env.local
+# .env.local に Supabase の URL と anon key を入力
+```
+
+5. 開発サーバーを起動
+```bash
+npm run dev
 ```
