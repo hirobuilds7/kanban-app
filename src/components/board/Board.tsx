@@ -22,7 +22,7 @@ interface Props {
   onUpdateColumnTitle: (id: string, title: string) => void
   onDeleteColumn: (id: string) => void
   onReorderColumns: (cols: ColumnType[]) => void
-  onAddTask: (colId: string, fields: { title: string; memo: string; priority: Task['priority']; due_date: string }) => void
+  onAddTask: (colId: string, fields: Omit<Task, 'id' | 'column_id' | 'user_id' | 'position' | 'created_at' | 'is_completed'>) => void
   onUpdateTask: (id: string, fields: Partial<Pick<Task, 'title' | 'memo' | 'priority' | 'due_date'>>) => void
   onDeleteTask: (id: string) => void
   onMoveTask: (taskId: string, toColumnId: string, newTasks: Task[]) => void

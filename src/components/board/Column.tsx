@@ -12,7 +12,7 @@ interface Props {
   tasks: Task[]
   onUpdateTitle: (id: string, title: string) => void
   onDeleteColumn: (id: string) => void
-  onAddTask: (columnId: string, fields: { title: string; memo: string; priority: Task['priority']; due_date: string }) => void
+  onAddTask: (columnId: string, fields: Omit<Task, 'id' | 'column_id' | 'user_id' | 'position' | 'created_at' | 'is_completed'>) => void
   onUpdateTask: (id: string, fields: Partial<Pick<Task, 'title' | 'memo' | 'priority' | 'due_date'>>) => void
   onDeleteTask: (id: string) => void
 }

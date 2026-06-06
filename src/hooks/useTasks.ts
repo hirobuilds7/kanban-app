@@ -21,12 +21,12 @@ export function useTasks(userId: string) {
     setLoading(false)
   }
 
-  const addTask = async (columnId: string, fields: Omit<Task, 'id' | 'column_id' | 'user_id' | 'position' | 'created_at'>) => {
+  const addTask = async (columnId: string, fields: Omit<Task, 'id' | 'column_id' | 'user_id' | 'position' | 'created_at' | 'is_completed'>) => {
     const colTasks = tasks.filter(t => t.column_id === columnId)
     const maxPos = colTasks.length > 0 ? Math.max(...colTasks.map(t => t.position)) + 1 : 0
     const { data, error } = await supabase
       .from('tasks')
-      .insert({ ...fields, column_id: columnId, user_id: userId, position: maxPos })
+      .insert({ ...fields, is_completed: false, column_id: columnId, user_id: userId, position: maxPos })
       .select()
       .single()
     if (data && !error) setTasks(prev => [...prev, data])
