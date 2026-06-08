@@ -3,7 +3,7 @@ import type { Priority, Task } from '../../types'
 
 interface Props {
   initial?: Partial<Task>
-  onSave: (fields: { title: string; memo: string; priority: Priority; due_date: string }) => void
+  onSave: (fields: { title: string; memo: string; priority: Priority; due_date: string | null }) => void
   onClose: () => void
 }
 
@@ -22,7 +22,7 @@ export function TaskModal({ initial, onSave, onClose }: Props) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (!title.trim()) return
-    onSave({ title: title.trim(), memo: memo.trim(), priority, due_date: dueDate })
+    onSave({ title: title.trim(), memo: memo.trim(), priority, due_date: dueDate || null })
     onClose()
   }
 
